@@ -21,7 +21,7 @@ A small menu bar organizer for macOS 27. Group apps behind a three-dot control a
 
 ## Install
 
-Download the application ZIP attached to a release, extract it, and move **ClickBar.app** into **Applications**. Quit other menu bar managers, open ClickBar, choose your groups, and enable hiding.
+Download `ClickBar-v0.2.1-macOS-arm64-icon-fixed.zip` from the [release](../../releases/tag/v0.2.1), extract it, and move **ClickBar.app** into **Applications**. Quit other menu bar managers, open ClickBar, choose your groups, and enable hiding.
 
 Allow ClickBar under **System Settings → Privacy & Security → Device Control and Data Access** (called Accessibility on earlier macOS) to open other apps’ menus. Return to ClickBar and use **Check Access**.
 
@@ -53,4 +53,4 @@ The private-framework shim is adapted from [Stash](https://github.com/brentc22/s
 
 Full upstream license notices are included in `Resources/Stash-LICENSE.txt` and `Resources/SmartHiddenBar-LICENSE.txt`, and copied into built app bundles.
 
-A license for the original ClickBar code has not yet been selected by the project owner. Choose one before offering that code for reuse as an open-source project; the upstream notices must remain included.
+ClickBar is available under the [MIT License](LICENSE). The upstream license notices must remain included. The app icon was generated with ChatGPT.
