@@ -15,6 +15,7 @@ public final class Restriction {
     public var onFailure: ((String) -> Void)?
     public init() {}
     public var available: Bool { STMenuBarShim.isAvailable() }
+    public var isActive: Bool { token != nil || pendingToken != nil }
 
     public func apply(allowed: Set<String>?) {
         guard let allowed else { clear(); return }

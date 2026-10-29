@@ -10,6 +10,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private var item: NSStatusItem!
     private var settings: NSWindow?
     private var iconPanel: IconPanel!
+    private var notificationCenterBridge: NotificationCenterBridge?
     private var clickTimer: Timer?
     private var recognizer = ClickRecognizer()
     private let interactionLog = Logger(subsystem: "local.chan.ClickBar", category: "Interaction")
@@ -36,11 +37,15 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         item.button?.action = #selector(clicked)
         item.button?.sendAction(on: [.leftMouseUp, .rightMouseUp])
         model = AppModel()
+        notificationCenterBridge = NotificationCenterBridge(model: model)
         iconPanel = IconPanel(model: model)
         iconPanel.onSettings = { [weak self] in self?.showSettings() }
         model.onChange = { [weak self] in self?.render() }
         render()
-        showSettings()
+        // Show setup on a fresh install. Once configured, launch quietly;
+        // settings remain available from the status item or by reopening the app.
+        if UserDefaults.standard.object(forKey: "enabled") == nil &&
+            UserDefaults.standard.object(forKey: "groups") == nil { showSettings() }
     }
 
     func applicationDidBecomeActive(_ notification: Notification) { model?.refresh() }
@@ -51,6 +56,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     func applicationWillTerminate(_ notification: Notification) {
         cancelClick()
         iconPanel?.dismiss()
+        notificationCenterBridge?.stop()
         model?.shutdown()
     }
     @objc private func clicked() {

@@ -11,6 +11,7 @@ A small menu bar organizer for macOS 27. Group apps behind a three-dot control a
 - Hidden groups stay hidden on the main menu bar while the lower panel is open.
 - Open supported apps’ menu bar menus from the lower panel with Accessibility access.
 - Open BetterDisplay’s native controls through its documented integration command.
+- Start quietly after setup, including at login. Open Settings by right-clicking the three dots.
 - Store preferences locally. Checking for updates contacts GitHub only when requested. No account or screen capture is needed.
 
 ## Requirements
@@ -44,6 +45,7 @@ The app is created at `dist/ClickBar.app`. Move that copy into Applications befo
 - Apps without accessible menu bar items can appear in the settings list. Some custom popovers need app-specific support.
 - BetterDisplay’s CLI access must be enabled in its Application → Integration settings. ClickBar does not change its display controls or integration preferences.
 - Hiding uses the private macOS 27 MenuBarClientCore framework. Future macOS versions may change it.
+- To let Notification Center open with one click, hiding pauses while the pointer is within the clock’s actual bounds and while Notification Center is open. Icons hide again after the panel closes and the pointer leaves the clock. Hovering Control Center does not trigger this pause. Accessibility access is needed to read the clock’s bounds.
 - A rebuilt ad-hoc-signed executable can invalidate its previous Accessibility approval. If the switch is on but ClickBar reports no access, remove the stale ClickBar entry and add the currently installed copy again.
 - Launch at login is optional and can be controlled in ClickBar settings.
 

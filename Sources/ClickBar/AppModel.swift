@@ -24,6 +24,7 @@ final class AppModel: ObservableObject {
     @Published var launchAtLogin = false
     @Published var loginItemNeedsApproval = false
     @Published var loginItemError: String?
+    private(set) var notificationCenterSuspended = false
     var onChange: (() -> Void)?
     private let restriction = Restriction()
     private var observation: NSKeyValueObservation?
@@ -70,6 +71,11 @@ final class AppModel: ObservableObject {
         let members = VisibilityPolicy.panelMembers(running: runningIDs, groups: groups,
                                                     state: state, ownID: Self.ownID)
         return apps.filter { members.contains($0.id) }
+    }
+    var hasActiveHiding: Bool { enabled && issue == nil && restriction.isActive }
+    func setNotificationCenterSuspended(_ suspended: Bool) {
+        notificationCenterSuspended = suspended
+        apply()
     }
     func checkAccessibility() { accessibilityGranted = AXIsProcessTrusted() }
     func refreshLoginItem() {
@@ -171,7 +177,7 @@ final class AppModel: ObservableObject {
         let conflicts = NSWorkspace.shared.runningApplications.filter {
             ["Thaw", "Ice", "Bartender", "Stash", "Hidden Bar", "SmartHiddenBar"].contains($0.localizedName ?? "")
         }.compactMap(\.localizedName)
-        if !enabled {
+        if !enabled || notificationCenterSuspended {
             issue = nil
             restriction.clear()
         } else if !conflicts.isEmpty {
