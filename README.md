@@ -11,7 +11,7 @@ A small menu bar organizer for macOS 27. Group apps behind a three-dot control a
 - Hidden groups stay hidden on the main menu bar while the lower panel is open.
 - Open supported apps’ menu bar menus from the lower panel with Accessibility access.
 - Open BetterDisplay’s native controls through its documented integration command.
-- Store preferences locally. No account, network requests, or screen capture.
+- Store preferences locally. Checking for updates contacts GitHub only when requested. No account or screen capture is needed.
 
 ## Requirements
 
@@ -21,7 +21,7 @@ A small menu bar organizer for macOS 27. Group apps behind a three-dot control a
 
 ## Install
 
-Download `ClickBar-v0.2.2-macOS-arm64.zip` from the [release](../../releases/tag/v0.2.2), extract it, and move **ClickBar.app** into **Applications**. Quit other menu bar managers, open ClickBar, choose your groups, and enable hiding.
+Download `ClickBar-v0.2.3-macOS-arm64.zip` from the [release](../../releases/tag/v0.2.3), extract it, and move **ClickBar.app** into **Applications**. Quit other menu bar managers, open ClickBar, choose your groups, and enable hiding.
 
 Allow ClickBar under **System Settings → Privacy & Security → Device Control and Data Access** (called Accessibility on earlier macOS) to open other apps’ menus. Return to ClickBar and use **Check Access**.
 

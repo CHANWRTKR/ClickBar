@@ -4,6 +4,7 @@ import ClickBarCore
 
 struct SettingsView: View {
     @ObservedObject var model: AppModel
+    @StateObject private var updates = UpdateChecker()
     var body: some View {
         VStack(alignment: .leading, spacing: 16) {
             HStack(alignment: .top) {
@@ -39,6 +40,18 @@ struct SettingsView: View {
             if let error = model.loginItemError {
                 Text("Could not change login setting: \(error)")
                     .font(.caption).foregroundStyle(.orange)
+            }
+            HStack {
+                Text("Version \(updates.currentVersion)").font(.caption).foregroundStyle(.secondary)
+                Button(updates.checking ? "Checking…" : "Check for Updates", action: updates.check)
+                    .disabled(updates.checking)
+                if !updates.message.isEmpty {
+                    Text(updates.message).font(.caption).foregroundStyle(.secondary)
+                }
+                if updates.releaseURL != nil {
+                    Button("Open Release", action: updates.openRelease)
+                }
+                Spacer()
             }
             HStack {
                 Label(model.accessibilityGranted ? "Menu access enabled" : "Accessibility is needed to open menus from the icon panel",

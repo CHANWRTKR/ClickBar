@@ -8,6 +8,10 @@ var count = 0
     if !result() { failures += 1; print("FAIL: \(name)") }
 }
 let own = "local.chan.ClickBar"
+check(ReleaseVersion("v0.2.10")! > ReleaseVersion("0.2.9")!, "update comparison is numeric")
+check(ReleaseVersion("v1.0.0")! > ReleaseVersion("v0.99.99")!, "major versions sort correctly")
+check(ReleaseVersion("v0.2.2") == ReleaseVersion("0.2.2"), "optional v prefix")
+check(ReleaseVersion("v0.2") == nil && ReleaseVersion("v0.2.3-beta") == nil, "ignore unsupported tags")
 let running: Set<String> = [own, "visible", "quick", "deep", "new-app", "helper"]
 let groups: [String: IconGroup] = [own: .double, "visible": .always, "quick": .single, "deep": .double]
 check(VisibilityPolicy.hidden(running: running, groups: groups, state: .collapsed, ownID: own) == ["quick", "deep"], "collapsed hides both groups, never self or new apps")
