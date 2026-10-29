@@ -120,7 +120,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         NSApp.mainMenu = root
     }
     private func render() {
-        item.button?.image = NSImage(systemSymbolName: "ellipsis", accessibilityDescription: "ClickBar")
+        let symbol = NSImage(systemSymbolName: "ellipsis", accessibilityDescription: "ClickBar")
+        item.button?.image = symbol?.withSymbolConfiguration(.init(pointSize: 15, weight: .bold)) ?? symbol
         item.button?.image?.isTemplate = true
         item.button?.toolTip = model.issue ?? "ClickBar · \(model.state.title)\nSingle click: first group · Double click: both groups · Right-click: settings"
         iconPanel.sync()

@@ -1,6 +1,7 @@
 import AppKit
 import SwiftUI
 import ClickBarCore
+import ServiceManagement
 @preconcurrency import ApplicationServices
 
 struct AppRow: Identifiable {
@@ -20,6 +21,9 @@ final class AppModel: ObservableObject {
     @Published var issue: String?
     @Published var search = ""
     @Published var accessibilityGranted = AXIsProcessTrusted()
+    @Published var launchAtLogin = false
+    @Published var loginItemNeedsApproval = false
+    @Published var loginItemError: String?
     var onChange: (() -> Void)?
     private let restriction = Restriction()
     private var observation: NSKeyValueObservation?
@@ -68,6 +72,27 @@ final class AppModel: ObservableObject {
         return apps.filter { members.contains($0.id) }
     }
     func checkAccessibility() { accessibilityGranted = AXIsProcessTrusted() }
+    func refreshLoginItem() {
+        let status = SMAppService.mainApp.status
+        launchAtLogin = status == .enabled
+        loginItemNeedsApproval = status == .requiresApproval
+    }
+    func setLaunchAtLogin(_ enabled: Bool) {
+        loginItemError = nil
+        do {
+            if enabled {
+                if SMAppService.mainApp.status != .enabled && SMAppService.mainApp.status != .requiresApproval {
+                    try SMAppService.mainApp.register()
+                }
+            } else if SMAppService.mainApp.status == .enabled || SMAppService.mainApp.status == .requiresApproval {
+                try SMAppService.mainApp.unregister()
+            }
+        } catch {
+            loginItemError = error.localizedDescription
+        }
+        refreshLoginItem()
+    }
+    func openLoginItemSettings() { SMAppService.openSystemSettingsLoginItems() }
     func requestAccessibility() {
         let options = [kAXTrustedCheckOptionPrompt.takeUnretainedValue() as String: true] as CFDictionary
         accessibilityGranted = AXIsProcessTrustedWithOptions(options)
@@ -112,6 +137,7 @@ final class AppModel: ObservableObject {
     }
     func refresh() {
         checkAccessibility()
+        refreshLoginItem()
         let running = NSWorkspace.shared.runningApplications
         // Include even background bundles in the allowlist; unconfigured items must
         // never disappear just because their owning app has no Dock icon.

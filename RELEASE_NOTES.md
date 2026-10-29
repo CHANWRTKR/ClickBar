@@ -1,13 +1,8 @@
-# ClickBar v0.2.1
+# ClickBar v0.2.2
 
-Initial public candidate for Apple Silicon Macs running macOS 27.
+- Add an optional Open ClickBar at login switch in Settings, with macOS approval guidance when needed.
+- Make the three-dot menu bar icon bolder.
 
-- Group menu bar apps behind a three-dot control.
-- Show single-click and double-click groups in a lower icon panel.
-- Pair forwarded click events by elapsed time for reliable double-click recognition.
-- Support BetterDisplay’s native control window.
-- Include the updated full-bleed app icon.
+Requires an Apple Silicon Mac running macOS 27 or later. The app is ad-hoc signed and not notarized, so macOS may require approval to open it. A replacement build may require removing and re-adding ClickBar in Privacy & Security's Device Control and Data Access settings.
 
-Validation: 32/32 core checks passed. Physical double-click was confirmed in local use; BetterDisplay controls were verified in the native UI. Multi-display and longer-term compatibility testing remain limited.
-
-The current app build is ad-hoc signed and not notarized. macOS may require approval before opening the downloaded app.
+The existing 32 core checks passed. The login setting was confirmed to appear enabled on the development Mac; an actual login after a restart has not yet been tested.

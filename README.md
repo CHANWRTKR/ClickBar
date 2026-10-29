@@ -21,7 +21,7 @@ A small menu bar organizer for macOS 27. Group apps behind a three-dot control a
 
 ## Install
 
-Download `ClickBar-v0.2.1-macOS-arm64-icon-fixed.zip` from the [release](../../releases/tag/v0.2.1), extract it, and move **ClickBar.app** into **Applications**. Quit other menu bar managers, open ClickBar, choose your groups, and enable hiding.
+Download `ClickBar-v0.2.2-macOS-arm64.zip` from the [release](../../releases/tag/v0.2.2), extract it, and move **ClickBar.app** into **Applications**. Quit other menu bar managers, open ClickBar, choose your groups, and enable hiding.
 
 Allow ClickBar under **System Settings → Privacy & Security → Device Control and Data Access** (called Accessibility on earlier macOS) to open other apps’ menus. Return to ClickBar and use **Check Access**.
 
@@ -45,7 +45,7 @@ The app is created at `dist/ClickBar.app`. Move that copy into Applications befo
 - BetterDisplay’s CLI access must be enabled in its Application → Integration settings. ClickBar does not change its display controls or integration preferences.
 - Hiding uses the private macOS 27 MenuBarClientCore framework. Future macOS versions may change it.
 - A rebuilt ad-hoc-signed executable can invalidate its previous Accessibility approval. If the switch is on but ClickBar reports no access, remove the stale ClickBar entry and add the currently installed copy again.
-- Preferences use the `local.chan.ClickBar` UserDefaults domain. The app does not enable launch at login automatically.
+- Preferences use the `local.chan.ClickBar` UserDefaults domain. Launch at login is optional and can be controlled in ClickBar settings.
 
 ## Credits and licensing
 

@@ -24,6 +24,23 @@ struct SettingsView: View {
             Text("Click again to close • Right-click the three dots for settings")
                 .font(.caption).foregroundStyle(.secondary)
             HStack {
+                Toggle("Open ClickBar at login", isOn: Binding(get: { model.launchAtLogin || model.loginItemNeedsApproval }, set: model.setLaunchAtLogin))
+                    .toggleStyle(.switch)
+                    .accessibilityIdentifier("launchAtLogin")
+                Spacer()
+                if model.loginItemNeedsApproval {
+                    Button("Allow in Login Items…", action: model.openLoginItemSettings)
+                }
+            }
+            if model.loginItemNeedsApproval {
+                Text("Allow ClickBar in Login Items to finish enabling launch at login.")
+                    .font(.caption).foregroundStyle(.secondary)
+            }
+            if let error = model.loginItemError {
+                Text("Could not change login setting: \(error)")
+                    .font(.caption).foregroundStyle(.orange)
+            }
+            HStack {
                 Label(model.accessibilityGranted ? "Menu access enabled" : "Accessibility is needed to open menus from the icon panel",
                       systemImage: model.accessibilityGranted ? "checkmark.circle" : "hand.point.up.left")
                     .font(.caption).foregroundStyle(.secondary)
