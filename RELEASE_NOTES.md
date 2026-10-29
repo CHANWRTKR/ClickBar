@@ -1,10 +1,12 @@
-# Unreleased
+# ClickBar v0.2.4
 
 - Start quietly after initial setup instead of opening Settings on every launch, including at login.
 - Let a single native clock click open Notification Center by pausing hiding while hovering the clock and while the panel is open. Resume hiding after both the pointer and panel have left.
 - Use the clock’s actual Accessibility bounds on each display so hovering Control Center does not reveal hidden icons.
 
-Validation: release build succeeded, 36/36 core checks passed, and the user confirmed single-click Notification Center opening and the narrower hover area on the installed build. The core checks do not exercise macOS Notification Center interactions.
+Requires an Apple Silicon Mac running macOS 27 or later. This build is ad-hoc signed and not notarized. After replacing an older build, you may need to remove and re-add ClickBar in Privacy & Security’s Device Control and Data Access settings.
+
+Validation: release build succeeded and 36/36 core checks passed. Manual testing on the installed app confirmed single-click Notification Center opening and that hovering Control Center no longer reveals icons. The core checks do not exercise macOS Notification Center interactions.
 
 # ClickBar v0.2.3
 

@@ -22,7 +22,7 @@ A small menu bar organizer for macOS 27. Group apps behind a three-dot control a
 
 ## Install
 
-Download `ClickBar-v0.2.3-macOS-arm64.zip` from the [release](../../releases/tag/v0.2.3), extract it, and move **ClickBar.app** into **Applications**. Quit other menu bar managers, open ClickBar, choose your groups, and enable hiding.
+Download `ClickBar-v0.2.4-macOS-arm64.zip` from the [release](../../releases/tag/v0.2.4), extract it, and move **ClickBar.app** into **Applications**. Quit other menu bar managers, open ClickBar, choose your groups, and enable hiding.
 
 Allow ClickBar under **System Settings → Privacy & Security → Device Control and Data Access** (called Accessibility on earlier macOS) to open other apps’ menus. Return to ClickBar and use **Check Access**.
 
