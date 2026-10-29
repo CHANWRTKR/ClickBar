@@ -45,7 +45,7 @@ The app is created at `dist/ClickBar.app`. Move that copy into Applications befo
 - BetterDisplay’s CLI access must be enabled in its Application → Integration settings. ClickBar does not change its display controls or integration preferences.
 - Hiding uses the private macOS 27 MenuBarClientCore framework. Future macOS versions may change it.
 - A rebuilt ad-hoc-signed executable can invalidate its previous Accessibility approval. If the switch is on but ClickBar reports no access, remove the stale ClickBar entry and add the currently installed copy again.
-- Preferences use the `local.chan.ClickBar` UserDefaults domain. Launch at login is optional and can be controlled in ClickBar settings.
+- Launch at login is optional and can be controlled in ClickBar settings.
 
 ## Credits and licensing
 
