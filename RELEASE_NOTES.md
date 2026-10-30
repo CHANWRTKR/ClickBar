@@ -1,3 +1,12 @@
+# ClickBar v0.2.5
+
+- Add a shared visibility fallback for hidden menu bar items and custom panels, including Vorssaint: reveal only the requested app before opening, then restore hiding without changing saved groups.
+- Re-read menu bar items after revealing them, avoid duplicate activation attempts, and report when an app still does not expose an accessible menu or panel.
+
+Requires an Apple Silicon Mac running macOS 27 or later. This build is ad-hoc signed and not notarized. After replacing an older build, you may need to remove and re-add ClickBar in Privacy & Security’s Device Control and Data Access settings.
+
+Validation: release build succeeded and 40/40 core checks passed, including temporary visibility preserving the other hidden group and restoring hiding. Manual testing confirmed that Vorssaint and Crisp open and hide again after use. Apps without Accessibility controls or with panels in separate helper processes may still need app-specific support.
+
 # ClickBar v0.2.4
 
 - Start quietly after initial setup instead of opening Settings on every launch, including at login.

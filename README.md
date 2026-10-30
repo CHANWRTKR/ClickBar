@@ -22,7 +22,7 @@ A small menu bar organizer for macOS 27. Group apps behind a three-dot control a
 
 ## Install
 
-Download `ClickBar-v0.2.4-macOS-arm64.zip` from the [release](../../releases/tag/v0.2.4), extract it, and move **ClickBar.app** into **Applications**. Quit other menu bar managers, open ClickBar, choose your groups, and enable hiding.
+Download `ClickBar-v0.2.5-macOS-arm64.zip` from the [release](../../releases/tag/v0.2.5), extract it, and move **ClickBar.app** into **Applications**. Quit other menu bar managers, open ClickBar, choose your groups, and enable hiding.
 
 Allow ClickBar under **System Settings → Privacy & Security → Device Control and Data Access** (called Accessibility on earlier macOS) to open other apps’ menus. Return to ClickBar and use **Check Access**.
 
@@ -43,6 +43,7 @@ The app is created at `dist/ClickBar.app`. Move that copy into Applications befo
 - Grouping applies per app, including all status items owned by that app, and is shared across displays.
 - The lower panel uses application icons rather than captured live menu bar glyphs.
 - Apps without accessible menu bar items can appear in the settings list. Some custom popovers need app-specific support.
+- If a menu cannot be read while hidden, or an app uses a custom panel, ClickBar temporarily reveals that app’s status item before opening it. The icon hides again after use; its saved group stays unchanged. Apps that do not expose Accessibility controls, or whose panels run in separate helper processes, may still need app-specific support.
 - BetterDisplay’s CLI access must be enabled in its Application → Integration settings. ClickBar does not change its display controls or integration preferences.
 - Hiding uses the private macOS 27 MenuBarClientCore framework. Future macOS versions may change it.
 - To let Notification Center open with one click, hiding pauses while the pointer is within the clock’s actual bounds and while Notification Center is open. Icons hide again after the panel closes and the pointer leaves the clock. Hovering Control Center does not trigger this pause. Accessibility access is needed to read the clock’s bounds.

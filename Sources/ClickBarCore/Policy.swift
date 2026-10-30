@@ -27,9 +27,13 @@ public enum RevealState: Int, Sendable {
 }
 
 public enum VisibilityPolicy {
-    /// Opening the lower panel must never reveal hidden apps on the main bar.
-    public static func hiddenOnMenuBar(running: Set<String>, groups: [String: IconGroup], ownID: String) -> Set<String> {
-        hidden(running: running, groups: groups, state: .collapsed, ownID: ownID)
+    /// Panel membership does not reveal icons. A native menu may temporarily
+    /// need its own status item, without exposing the rest of either group.
+    public static func hiddenOnMenuBar(running: Set<String>, groups: [String: IconGroup], ownID: String,
+                                      temporarilyVisibleAppID: String? = nil) -> Set<String> {
+        var result = hidden(running: running, groups: groups, state: .collapsed, ownID: ownID)
+        if let temporarilyVisibleAppID { result.remove(temporarilyVisibleAppID) }
+        return result
     }
 
     public static func panelMembers(running: Set<String>, groups: [String: IconGroup],

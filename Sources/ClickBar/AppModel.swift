@@ -25,6 +25,7 @@ final class AppModel: ObservableObject {
     @Published var loginItemNeedsApproval = false
     @Published var loginItemError: String?
     private(set) var notificationCenterSuspended = false
+    private var nativeMenuAppID: String?
     var onChange: (() -> Void)?
     private let restriction = Restriction()
     private var observation: NSKeyValueObservation?
@@ -78,6 +79,10 @@ final class AppModel: ObservableObject {
         apply()
     }
     func checkAccessibility() { accessibilityGranted = AXIsProcessTrusted() }
+    func setNativeMenuApp(_ appID: String?) {
+        nativeMenuAppID = appID
+        apply()
+    }
     func refreshLoginItem() {
         let status = SMAppService.mainApp.status
         launchAtLogin = status == .enabled
@@ -195,7 +200,8 @@ final class AppModel: ObservableObject {
             restriction.clear()
         } else {
             issue = nil
-            let hidden = VisibilityPolicy.hiddenOnMenuBar(running: runningIDs, groups: groups, ownID: Self.ownID)
+            let hidden = VisibilityPolicy.hiddenOnMenuBar(running: runningIDs, groups: groups, ownID: Self.ownID,
+                                                         temporarilyVisibleAppID: nativeMenuAppID)
             restriction.apply(allowed: hidden.isEmpty ? nil : VisibilityPolicy.allowing(
                 running: runningIDs, hidden: hidden, ownID: Self.ownID))
         }

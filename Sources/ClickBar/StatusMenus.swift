@@ -1,5 +1,6 @@
 import AppKit
 import ApplicationServices
+import CoreGraphics
 
 // The AXExtrasMenuBar / mirrored-menu approach follows SmartHiddenBar by Roy
 // Padina (MIT). See Resources/SmartHiddenBar-LICENSE.txt. All AX IPC stays off
@@ -22,6 +23,7 @@ private struct MenuPick: @unchecked Sendable {
     let title: String
 }
 private enum MenuResult: @unchecked Sendable {
+    case needsVisibility
     case choices([AXItem])
     case menu(AXItem, [MenuNode])
     case activated
@@ -110,20 +112,44 @@ private enum AXMenus {
                 children: sub.map { snapshot($0, path: next, depth: depth + 1) } ?? [])
         }
     }
-    static func load(_ item: AXItem) -> MenuResult {
+    static func visibleWindows(pid: pid_t) -> Set<CGWindowID> {
+        let windows = CGWindowListCopyWindowInfo([.optionOnScreenOnly], kCGNullWindowID) as? [[String: Any]] ?? []
+        return Set(windows.compactMap { info in
+            guard info[kCGWindowOwnerPID as String] as? pid_t == pid,
+                  let bounds = info[kCGWindowBounds as String] as? [String: Any],
+                  let rect = CGRect(dictionaryRepresentation: bounds as CFDictionary),
+                  rect.width > 100, rect.height > 60 else { return nil }
+            return info[kCGWindowNumber as String] as? CGWindowID
+        })
+    }
+    static func load(_ item: AXItem, pid: pid_t, revealed: Bool) -> MenuResult {
         if let root = menu(item.element), !isOpen(root), !children(root).isEmpty {
             return .menu(item, snapshot(root))
         }
-        guard let root = open(item) else { return .activated }
+        // Custom panels need a real anchor. Reveal before the first press,
+        // rather than guessing whether a press on a hidden item worked and
+        // accidentally toggling an already-open panel closed with a retry.
+        guard revealed else { return .needsVisibility }
+        let before = visibleWindows(pid: pid)
+        guard let root = open(item) else {
+            if !visibleWindows(pid: pid).subtracting(before).isEmpty { return .activated }
+            return .unavailable("The app did not expose an accessible menu or panel. Try its menu bar icon directly.")
+        }
         let nodes = snapshot(root)
         close(root, item: item)
         return .menu(item, nodes)
     }
-    static func load(pid: pid_t) -> MenuResult {
+    static func load(pid: pid_t, selectedIndex: Int?, revealed: Bool) -> MenuResult {
         let found = items(pid: pid)
-        guard let first = found.first else { return .unavailable("This app has no accessible menu bar item.") }
+        guard let first = found.first else {
+            return revealed ? .unavailable("Could not access this app’s menu bar item, even while visible.") : .needsVisibility
+        }
+        if let selectedIndex {
+            guard found.indices.contains(selectedIndex) else { return .unavailable("The menu bar items changed. Open this app’s menu again.") }
+            return load(found[selectedIndex], pid: pid, revealed: revealed)
+        }
         if found.count > 1 { return .choices(found) }
-        return load(first)
+        return load(first, pid: pid, revealed: revealed)
     }
     static func execute(_ pick: MenuPick) -> Bool {
         guard let root = open(pick.item) else { return false }
@@ -146,15 +172,22 @@ private enum AXMenus {
 final class StatusMenus: NSObject {
     var onFinish: (() -> Void)?
     var onNotice: ((String) -> Void)?
+    var onRevealNeeded: ((String) -> Bool)?
     private var generation = 0
     private var anchorView: NSView?
     private var openMenu: NSMenu?
+    private var appID: String?
+    private var pid: pid_t = 0
+    private var revealed = false
+    private var selectedIndex: Int?
+    private var choiceSelected = false
 
     func cancel() {
         generation += 1
         openMenu?.cancelTracking()
         openMenu = nil
         anchorView = nil
+        appID = nil
     }
     func show(appID: String, below view: NSView) {
         guard AXIsProcessTrusted() else {
@@ -168,6 +201,10 @@ final class StatusMenus: NSObject {
         let request = generation
         anchorView = view
         let pid = app.processIdentifier
+        self.appID = appID
+        self.pid = pid
+        revealed = false
+        selectedIndex = nil
         if appID == "pro.betterdisplay.BetterDisplay", let bundle = app.bundleURL,
            let window = view.window, let screen = window.screen ?? NSScreen.main {
             let anchor = window.convertToScreen(view.convert(view.bounds, to: nil))
@@ -185,8 +222,17 @@ final class StatusMenus: NSObject {
             }
             return
         }
+        load(request: request)
+    }
+    private func load(request: Int) {
+        guard generation == request, let appID else { return }
+        guard NSRunningApplication.runningApplications(withBundleIdentifier: appID).contains(where: { $0.processIdentifier == pid }) else {
+            onNotice?("This app is no longer running.")
+            return
+        }
+        let pid = pid, selectedIndex = selectedIndex, revealed = revealed
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            let result = AXMenus.load(pid: pid)
+            let result = AXMenus.load(pid: pid, selectedIndex: selectedIndex, revealed: revealed)
             DispatchQueue.main.async { [weak self] in
                 guard let self, self.generation == request else { return }
                 self.present(result, request: request)
@@ -196,19 +242,33 @@ final class StatusMenus: NSObject {
     private func present(_ result: MenuResult, request: Int) {
         guard let anchorView, anchorView.window?.isVisible == true else { onFinish?(); return }
         switch result {
+        case .needsVisibility:
+            guard !revealed, let appID, onRevealNeeded?(appID) == true else {
+                onNotice?("Could not make this app’s menu bar item available.")
+                return
+            }
+            revealed = true
+            // Read new AX elements after the visibility change; the old
+            // wrappers may have been removed by the menu bar owner.
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) { [weak self] in
+                guard let self, self.generation == request, self.anchorView?.window?.isVisible == true else { return }
+                self.load(request: request)
+            }
         case .activated:
             onFinish?()
         case .unavailable(let message):
             onNotice?(message)
         case .choices(let choices):
             let menu = NSMenu()
-            for choice in choices {
+            choiceSelected = false
+            for (index, choice) in choices.enumerated() {
                 let entry = NSMenuItem(title: choice.label, action: #selector(chooseItem), keyEquivalent: "")
                 entry.target = self
-                entry.representedObject = choice
+                entry.tag = index
                 menu.addItem(entry)
             }
             pop(menu, at: anchorView)
+            if !choiceSelected { onFinish?() }
         case .menu(let item, let nodes):
             guard !nodes.isEmpty else { onNotice?("This menu is empty."); return }
             pop(makeMenu(nodes, item: item), at: anchorView)
@@ -237,15 +297,9 @@ final class StatusMenus: NSObject {
         return menu
     }
     @objc private func chooseItem(_ sender: NSMenuItem) {
-        guard let item = sender.representedObject as? AXItem else { return }
-        let request = generation
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            let result = AXMenus.load(item)
-            DispatchQueue.main.async { [weak self] in
-                guard let self, self.generation == request else { return }
-                self.present(result, request: request)
-            }
-        }
+        choiceSelected = true
+        selectedIndex = sender.tag
+        load(request: generation)
     }
     @objc private func pick(_ sender: NSMenuItem) {
         guard let pick = sender.representedObject as? MenuPick else { return }

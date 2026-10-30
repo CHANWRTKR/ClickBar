@@ -12,6 +12,7 @@ final class IconPanel: NSObject {
     private let model: AppModel
     private let window: IconPanelWindow
     private let menus = StatusMenus()
+    private let nativeMenuSession: NativeMenuSession
     private var entries: [AppRow] = []
     private var globalMonitor: Any?
     private var localMonitor: Any?
@@ -24,6 +25,7 @@ final class IconPanel: NSObject {
 
     init(model: AppModel) {
         self.model = model
+        nativeMenuSession = NativeMenuSession(model: model)
         window = IconPanelWindow(contentRect: .zero,
             styleMask: [.borderless, .nonactivatingPanel], backing: .buffered, defer: false)
         super.init()
@@ -36,10 +38,18 @@ final class IconPanel: NSObject {
         window.isReleasedWhenClosed = false
         window.collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
         window.onEscape = { [weak self] in self?.dismiss() }
-        menus.onFinish = { [weak self] in self?.openingMenu = false; self?.dismiss() }
+        menus.onRevealNeeded = { [weak self] appID in
+            self?.nativeMenuSession.begin(appID: appID) ?? false
+        }
+        menus.onFinish = { [weak self] in
+            self?.nativeMenuSession.finishOpening()
+            self?.openingMenu = false
+            self?.dismiss()
+        }
         menus.onNotice = { [weak self] message in
             guard let self else { return }
             self.openingMenu = false
+            self.nativeMenuSession.stop()
             self.noticeLabel?.stringValue = message
             self.noticeLabel?.textColor = .secondaryLabelColor
         }
@@ -64,6 +74,7 @@ final class IconPanel: NSObject {
     }
     private func hide() {
         menus.cancel()
+        if openingMenu { nativeMenuSession.stop() }
         openingMenu = false
         window.orderOut(nil)
         if let globalMonitor { NSEvent.removeMonitor(globalMonitor); self.globalMonitor = nil }
@@ -172,7 +183,8 @@ final class IconPanel: NSObject {
         }
         openingMenu = true
         noticeLabel?.stringValue = "Opening menu…"
-        menus.show(appID: entries[sender.tag].id, below: sender)
+        let appID = entries[sender.tag].id
+        menus.show(appID: appID, below: sender)
     }
     @objc private func settingsPressed() { dismiss(); onSettings?() }
     @objc private func closePressed() { dismiss() }
